@@ -83,7 +83,7 @@ int main() {
 			"listed": ["string", "int", "identifier"],
 			"string": {
 				"type": "dynamic",
-				"syntax": "\"([^\\\\]|\\\\\\\\.)*\"",
+				"syntax": "\"([^\\\\\"]|\\\\\\\\.)*\"",
 				"convert": "String(&)",
 				"convertReceiver": "&",
 				"representation": "&",
