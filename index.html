@@ -63,7 +63,7 @@ int main() {
 			"consoleHandler": {
 				"snippet": "const c=document.createElement(\"div\"),o=document.createElement(\"pre\");document.body.appendChild(c);c.style=\"width:100%;height:100%;background-color:black;color:white;overflow-y:auto;\";c.appendChild(o);o.style=\"white-space:pre-wrap;word-wrap:break-word;display:inline-block;\";",
 				"reservedIdentifiers": ["c", "o"],
-				"endSnippet": "o.remove(),c.remove();",
+				"endSnippet": "",
 				"priority": 0
 			},
 			"async": {
@@ -185,7 +185,6 @@ function compile() {
 					if (tokens[i] === ">") {
 						librariesAdded.push(moduleName);
 						pars.push({ type: "include", library: moduleName });
-
 						if (metadata.base.libraries.hasOwnProperty(moduleName)) {
 							variables[metadata.base.libraries[moduleName].namespace] = {
 								type: "library",
@@ -204,7 +203,7 @@ function compile() {
 				break;
 			default:
 				const isType = metadata.base.dynamic.listed.includes(token);
-				const isVarDefined = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]);
+				const isVarDefined = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]) || Object.prototype.hasOwnProperty.call(variables, tokens[i]);
 				console.log(isType, isVarDefined);
 				if (i + 5 < tokens.length && token === "int" && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
 					mainFunction = true;
