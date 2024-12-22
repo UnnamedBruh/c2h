@@ -103,6 +103,7 @@ function compile() {
 	const programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
+	const regexesTypes = metadata.base.dynamic.listed.map(x => new RegExp(metadata.base.dynamic[x].regex, ""));
 	// Looking over the libraries that should be included.
 	for (; i < tokens.length; i++) {
 		switch (tokens[i]) {
@@ -134,9 +135,15 @@ function compile() {
 				if (i + 5 < tokens.length && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
 					mainFunction = true;
 					i += 5;
-				} else if (metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i])) {
+				} else if (tokens[i] === "const" || metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i])) {
+					if (tokens[i] === "const") {
+						i++;
+						if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i]))) {
+							break;
+						}
+					}
 					if (mainFunction) {
-						
+						proc.push({type: "assignment", isNew: true, identifier: tokens[i], isConst: tokens[i - 1] === "const"});
 					}
 				}
 		}
