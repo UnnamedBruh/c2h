@@ -160,8 +160,8 @@ function compile() {
 		"g"
 	);
 
-	const tokens = program.match(regex);
-	const programSplit = program.split("\n");
+	let tokens = program.match(regex);
+	let programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
 
@@ -169,7 +169,7 @@ function compile() {
 	const regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
 
 	for (; i < tokens.length; i++) {
-		const token = tokens[i];
+		let token = tokens[i];
 		switch (token) {
 			case "#include":
 				i++;
