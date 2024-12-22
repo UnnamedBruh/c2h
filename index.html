@@ -16,7 +16,7 @@
 		<textarea id="cprogram">#include &lt;iostream&gt;
 
 int main() {
-	std::cout &gt;&gt; "Hello, world!";
+	std::cout &lt;&lt; "Hello, world!";
 	return 0;
 }</textarea>
 		<button onclick="compile()">Compile!</button>
@@ -106,12 +106,13 @@ int main() {
 // When compiling regexes, for an example, if /Hello/ has priority of 1, and /hi/ has priority of 0, /Hello/ is compiled first and /hi/ is compiled last
 function compile() {
 	const program = document.getElementById("cprogram").value;
-	const regex = new RegExp(metadata.base.dynamic.listed.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority).map(x => metadata.base.dynamic[x].syntax).join("|") + (metadata.base.dynamic.listed.length > 0 ? "|" : "") + "[<>]{2}|#?[a-zA-Z_][a-zA-Z_0-9]*|[a-zA-Z_][a-zA-Z_0-9]*((::|\\.)([a-zA-Z_][a-zA-Z_0-9]*))*|[\\+\\-\\*/<>\\(\\).\\{\\}\\n]", "g");
+	const regex = new RegExp(metadata.base.dynamic.listed.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority).map(x => metadata.base.dynamic[x].syntax).join("|") + (metadata.base.dynamic.listed.length > 0 ? "|" : "") + "[<>]{2}|#?[a-zA-Z_][a-zA-Z_0-9]*((::|\\.)([a-zA-Z_][a-zA-Z_0-9]*))*|[\\+\\-\\*/<>\\(\\).\\{\\}\\n]", "g");
 	const tokens = program.match(regex);
 	const programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
 	const regexesTypes = metadata.base.dynamic.listed.map(x => new RegExp("^" + metadata.base.dynamic[x].regex + "$", ""));
+	const libraryNames = Object.keys(metadata.base.libraries);
 	// Looking over the libraries that should be included.
 	for (; i < tokens.length; i++) {
 		console.log(tokens[i]);
@@ -199,6 +200,11 @@ function compile() {
 								throw new RuntimeError("In an assignment, there is a type mismatch between " + type + " and the literal: " + typeOfValue + "\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + " ".repeat(proc[i - 1].length + type.length + 2) + "~".repeat(estimatedLength));
 							}
 						}
+					}
+				} else {
+					const librarySource = libraryNames.find(x => tokens[i].startsWith(metadata.base.libraries[x].namespace));
+					if (librarySource) {
+						
 					}
 				}
 		}
