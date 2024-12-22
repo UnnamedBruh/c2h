@@ -51,7 +51,7 @@ int main() {
                         "type": "istream",
                         "acceptTypes": ["string"],
                         "requestFunctionalities": ["async", "cinInput"],
-                        "snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(reslove){i.onkeypress=function(e){if(e.key===\"Enter\")resolve(i.value.split(/\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=String(h);i.remove();",
+                        "snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(r){i.onkeypress=function(e){if(e.key===\"Enter\")r(i.value.split(/\\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=String(h);i.remove();",
                         "placeholderReceiver": "&",
                         "endSnippet": null,
                         "status": 0
@@ -73,7 +73,7 @@ int main() {
                 "priority": 2
             },
             "cinInput": {
-                "snippet": "let h;const i=document.createElement(\"input\");i.style=\"background-color:black;color:white;width:10px;\"",
+                "snippet": "let h;const i=document.createElement(\"input\");i.style=\"background-color:black;color:white;width:10px;\";",
                 "reservedIdentifiers": ["h", "i"],
                 "endSnippet": "i.remove();",
                 "priority": 1
