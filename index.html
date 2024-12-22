@@ -166,7 +166,7 @@ function compile() {
 	let mainFunction = false;
 
 	// Looking over the libraries that should be included
-	const regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
+	let regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
 
 	for (; i < tokens.length; i++) {
 		let token = tokens[i];
