@@ -202,8 +202,53 @@ function compile() {
 				currentLine++;
 				break;
 			default:
-				[token, i, tokens, regexesTypes, programSplit, pars, variables] = handleDefaultCase(token, i, tokens, regexesTypes, programSplit, pars, variables);
-		}
+				const isType = metadata.base.dynamic.listed.includes(token);
+				const isVarDefined = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]);
+				if (i + 5 < tokens.length && token === "int" && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
+					mainFunction = true;
+					i += 5;
+				} else if (token === "const" || isType || isVarDefined) {
+					handleConstAndTypeAssignment(token, i, tokens, regexesTypes, programSplit, pars, variables);
+				} else {
+					const librarySource = libraryNames.find(x => token.startsWith(metadata.base.libraries[x].namespace));
+					if (librarySource) {
+						const currentPath = getLibraryMethod(librarySource, token);
+						switch (currentPath.type) {
+							case "ostream":
+								pars.push({type: "ostream", access: token});
+								while (tokens[i] !== "\n") {
+									i++;
+									if (tokens[i] === "<<") {
+										i++;
+										let typeOfValue;
+										for (let j = 0; j < regexesTypes.length; j++) {
+											if (regexesTypes[j].test(tokens[i])) {
+												typeOfValue = metadata.base.dynamic.listed[j];
+												pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
+												working = true;
+												break;
+											}
+										}
+									}
+								}
+								break;
+							case "istream":
+								pars.push({type: "istream", access: token});
+								i++;
+								if (tokens[i] === ">>") {
+									i++;
+									if (regexesTypes[2].test(tokens[i])) {
+										typeOfValue = metadata.base.dynamic.listed[j];
+										pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
+									} else {
+										throwSyntaxError(currentLine, programSplit, `${tokens[i]} should be a variable; the istream is meant to pass the value to a variable`);
+									}
+								}
+								break;
+						}
+					}
+				}
+			}
 	}
 
 	// Handle library method sorting
@@ -220,59 +265,6 @@ function compile() {
 
 	return { JS: compiled, parsing: pars };
 }
-
-// Handle default case for parsing tokens
-function handleDefaultCase(token, i, tokens, regexesTypes, programSplit, pars, variables) {
-	const isType = metadata.base.dynamic.listed.includes(token);
-	const isVarDefined = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]);
-
-	if (i + 5 < tokens.length && token === "int" && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
-		mainFunction = true;
-		i += 5;
-	} else if (token === "const" || isType || isVarDefined) {
-		handleConstAndTypeAssignment(token, i, tokens, regexesTypes, programSplit, pars, variables);
-	} else {
-		const librarySource = libraryNames.find(x => token.startsWith(metadata.base.libraries[x].namespace));
-		if (librarySource) {
-			const currentPath = getLibraryMethod(librarySource, token);
-			switch (currentPath.type) {
-				case "ostream":
-					pars.push({type: "ostream", access: token});
-					while (tokens[i] !== "\n") {
-						i++;
-						if (tokens[i] === "<<") {
-							i++;
-							let typeOfValue;
-							for (let j = 0; j < regexesTypes.length; j++) {
-								if (regexesTypes[j].test(tokens[i])) {
-									typeOfValue = metadata.base.dynamic.listed[j];
-									pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
-									working = true;
-									break;
-								}
-							}
-						}
-					}
-					break;
-				case "istream":
-					pars.push({type: "istream", access: token});
-					i++;
-					if (tokens[i] === ">>") {
-						i++;
-						if (regexesTypes[2].test(tokens[i])) {
-							typeOfValue = metadata.base.dynamic.listed[j];
-							pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
-						} else {
-							throwSyntaxError(currentLine, programSplit, `${tokens[i]} should be a variable; the istream is meant to pass the value to a variable`);
-						}
-					}
-					break;
-			}
-		}
-	}
-	return [token, i, tokens, regexesTypes, programSplit, pars, variables];
-}
-
 // Handle "const" and type assignments
 function handleConstAndTypeAssignment(token, i, tokens, regexesTypes, programSplit, pars, variables) {
 	if (token === "const") {
