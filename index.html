@@ -21,8 +21,7 @@ int main() {
 }</textarea>
 		<button onclick="compile()">Compile!</button>
 		<pre id="js"></pre>
-<script>
-const meta = {
+<script>const meta = {
     "version": 0,
     "base": {
         "libraries": {
@@ -35,8 +34,16 @@ const meta = {
                         "type": "ostream",
                         "acceptTypes": ["string", "int"],
                         "requestFunctionalities": [],
-                        "snippet": "o.textContent+=&;",
-                        "placeholderReceiver": "&",
+                        "snippets": {
+                             "string": {
+                                 "snippet": "o.textContent+=&;",
+                                 "placeholderReceiver": "&"
+                             },
+                             "int": {
+                                 "snippet": "o.textContent+=String(&);",
+                                 "placeholderReceiver": "&"
+                             }
+			},
                         "endSnippet": null,
                         "status": 0
                     },
@@ -81,7 +88,8 @@ const meta = {
                 "convertReceiver": "&",
                 "representation": "&",
                 "representationHandler": null,
-                "priority": 1
+                "priority": 1,
+                "properRepresentation": "std::string"
             },
             "int": {
                 "type": "dynamic",
@@ -103,7 +111,7 @@ function compile() {
 	const programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
-	const regexesTypes = metadata.base.dynamic.listed.map(x => new RegExp(metadata.base.dynamic[x].regex, ""));
+	const regexesTypes = metadata.base.dynamic.listed.map(x => new RegExp("^" + metadata.base.dynamic[x].regex + "$", ""));
 	// Looking over the libraries that should be included.
 	for (; i < tokens.length; i++) {
 		switch (tokens[i]) {
@@ -118,10 +126,15 @@ function compile() {
 					if (tokens[i] === ">") {
 						librariesAdded.push(moduleName);
 						pars.push({type: "include", library: moduleName});
-						variables[metadata.base.libraries[moduleName].namespace] = {
-							type: "library",
-							including: Object.keys(metadata.base.libraries[moduleName].methods)
-						};
+						if (metadata.base.libraries.hasOwnProperty(moduleName)) {
+							variables[metadata.base.libraries[moduleName].namespace] = {
+								type: "library",
+								including: Object.keys(metadata.base.libraries[moduleName].methods)
+							};
+						} else {
+							const estimatedLength = programSplit[currentLine - 1].length;
+							throw new SyntaxError("The library " + moduleName + " has not been found\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
+						}
 					} else {
 						const estimatedLength = programSplit[currentLine - 1].length;
 						throw new SyntaxError("Missing terminating character: >\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
@@ -132,18 +145,58 @@ function compile() {
 				currentLine++;
 				break;
 			default:
+				const ch1 = metadata.base.dynamic.listed.includes(tokens[i]);
+				const ch2 = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]);
 				if (i + 5 < tokens.length && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
 					mainFunction = true;
 					i += 5;
-				} else if (tokens[i] === "const" || metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i])) {
+				} else if (tokens[i] === "const" || ch1 || ch2) {
 					if (tokens[i] === "const") {
 						i++;
-						if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i]))) {
+						if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]))) {
 							break;
 						}
 					}
 					if (mainFunction) {
-						proc.push({type: "assignment", isNew: true, identifier: tokens[i], isConst: tokens[i - 1] === "const"});
+						if (metadata.base.dynamic.listed.includes(tokens[i]) && Object.prototype.hasOwnProperty.call(variables, tokens[i + 1])) {
+							const estimatedLength = programSplit[currentLine - 1].length;
+							throw new SyntaxError("The variable has already been declared\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
+						}
+						let type = "";
+						if (metadata.base.dynamic.listed.includes(tokens[i])) {
+							type = tokens[i];
+							if ((metadata.base.dynamic[type].properRepresentation ?? type) !== type) {
+								const estimatedLength = programSplit[currentLine - 1].length;
+								throw new SyntaxError(tokens[i] + " should instead be represented by " + metadata.base.dynamic[type].properRepresentation + "\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
+							}
+							i++;
+						}
+						proc.push({type: "assignment", isNew: !Object.prototype.hasOwnProperty.call(variables, tokens[i]), identifier: tokens[i], isConst: tokens[i - 2] === "const"});
+						i++;
+						if (tokens[i] === "=") {
+							i++;
+							// Now to test the types. I think I *regret* starting this project... but I have to keep trying! No matter how long it takes!
+							let working = false, typeOfValue;
+							for (let j = 0; j < regexesTypes.length; j++) {
+								if (regexesTypes[j].test(tokens[i])) {
+									proc.push({type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i]});
+									typeOfValue = metadata.base.dynamic.listed[j];
+									variables[tokens[i - 2]] = {
+										type: typeOfValue,
+										literal: tokens[i]
+									};
+									working = true;
+									break;
+								}
+							}
+							if (!working) {
+								const estimatedLength = programSplit[currentLine - 1].length;
+								throw new SyntaxError(tokens[i] + " cannot represent any type; the literal is most likely malformed\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + " ".repeat(proc[i - 1].length + type.length + 2) + "~".repeat(estimatedLength));
+							} else if (typeOfValue !== type) {
+								const estimatedLength = programSplit[currentLine - 1].length;
+								throw new RuntimeError("In an assignment, there is a type mismatch between " + type + " and the literal: " + typeOfValue + "\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + " ".repeat(proc[i - 1].length + type.length + 2) + "~".repeat(estimatedLength));
+							}
+						}
 					}
 				}
 		}
@@ -153,6 +206,7 @@ function compile() {
 	for (const library of librariesAdded) {
 		compiled += metadata.base.requestHandlers[metadata.base.libraries[library].requestFunctionality].snippet;
 	}
+	return {JS: compiled, parsing: pars};
 }
 </script>
 	</body>
