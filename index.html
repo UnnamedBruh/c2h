@@ -171,7 +171,7 @@ function compile() {
 							}
 							i++;
 						}
-						proc.push({type: "assignment", isNew: !Object.prototype.hasOwnProperty.call(variables, tokens[i]), identifier: tokens[i], isConst: tokens[i - 2] === "const"});
+						pars.push({type: "assignment", isNew: !Object.prototype.hasOwnProperty.call(variables, tokens[i]), identifier: tokens[i], isConst: tokens[i - 2] === "const"});
 						i++;
 						if (tokens[i] === "=") {
 							i++;
@@ -179,7 +179,7 @@ function compile() {
 							let working = false, typeOfValue;
 							for (let j = 0; j < regexesTypes.length; j++) {
 								if (regexesTypes[j].test(tokens[i])) {
-									proc.push({type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i]});
+									pars.push({type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i]});
 									typeOfValue = metadata.base.dynamic.listed[j];
 									variables[tokens[i - 2]] = {
 										type: typeOfValue,
