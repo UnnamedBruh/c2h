@@ -22,101 +22,156 @@ int main() {
 		<button onclick="compile()">Compile!</button>
 		<pre id="js"></pre>
 <script>const metadata = {
-    "version": 0,
-    "base": {
-        "libraries": {
-            "iostream": {
-                "namespace": "std",
-                "description": "Input-Output Streaming",
-                "requestFunctionality": "consoleHandler",
-                "methods": {
-                    "cout": {
-                        "type": "ostream",
-                        "acceptTypes": ["string", "int"],
-                        "requestFunctionalities": [],
-                        "snippets": {
-                             "string": {
-                                 "snippet": "o.textContent+=&;",
-                                 "placeholderReceiver": "&"
-                             },
-                             "int": {
-                                 "snippet": "o.textContent+=String(&);",
-                                 "placeholderReceiver": "&"
-                             }
+	"version": 0,
+	"base": {
+		"libraries": {
+			"iostream": {
+				"namespace": "std",
+				"description": "Input-Output Streaming",
+				"requestFunctionality": "consoleHandler",
+				"methods": {
+					"cout": {
+						"type": "ostream",
+						"acceptTypes": ["string", "int"],
+						"requestFunctionalities": [],
+						"snippets": {
+							 "string": {
+								 "snippet": "o.textContent+=&;",
+								 "placeholderReceiver": "&"
+							 },
+							 "int": {
+								 "snippet": "o.textContent+=String(&);",
+								 "placeholderReceiver": "&"
+							 }
+						},
+						"endSnippet": null,
+						"status": 0
+					},
+					"cin": {
+						"type": "istream",
+						"acceptTypes": ["string"],
+						"requestFunctionalities": ["async", "cinInput"],
+						"snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(r){i.onkeypress=function(e){if(e.key===\"Enter\")r(i.value.split(/\\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=String(h);i.remove();",
+						"placeholderReceiver": "&",
+						"endSnippet": null,
+						"status": 0
+					}
+				}
+			}
+		},
+		"requestHandlers": {
+			"consoleHandler": {
+				"snippet": "const c=document.createElement(\"div\"),o=document.createElement(\"pre\");document.body.appendChild(c);c.style=\"width:100%;height:100%;background-color:black;color:white;overflow-y:auto;\";c.appendChild(o);o.style=\"white-space:pre-wrap;word-wrap:break-word;display:inline-block;\";",
+				"reservedIdentifiers": ["c", "o"],
+				"endSnippet": "o.remove(),c.remove();",
+				"priority": 0
 			},
-                        "endSnippet": null,
-                        "status": 0
-                    },
-                    "cin": {
-                        "type": "istream",
-                        "acceptTypes": ["string"],
-                        "requestFunctionalities": ["async", "cinInput"],
-                        "snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(r){i.onkeypress=function(e){if(e.key===\"Enter\")r(i.value.split(/\\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=String(h);i.remove();",
-                        "placeholderReceiver": "&",
-                        "endSnippet": null,
-                        "status": 0
-                    }
-                }
-            }
-        },
-        "requestHandlers": {
-            "consoleHandler": {
-                "snippet": "const c=document.createElement(\"div\"),o=document.createElement(\"pre\");document.body.appendChild(c);c.style=\"width:100%;height:100%;background-color:black;color:white;overflow-y:auto;\";c.appendChild(o);o.style=\"white-space:pre-wrap;word-wrap:break-word;display:inline-block;\";",
-                "reservedIdentifiers": ["c", "o"],
-                "endSnippet": "o.remove(),c.remove();",
-                "priority": 0
-            },
-            "async": {
-                "snippet": "(async function(){",
-                "reservedIdentifiers": [],
-                "endSnippet": "})();",
-                "priority": 2
-            },
-            "cinInput": {
-                "snippet": "let h;const i=document.createElement(\"input\");i.style=\"background-color:black;color:white;width:10px;\";",
-                "reservedIdentifiers": ["h", "i"],
-                "endSnippet": "i.remove();",
-                "priority": 1
-            }
-        },
-        "dynamic": {
-            "listed": ["string", "int"],
-            "string": {
-                "type": "dynamic",
-                "syntax": "\"([^\\\\]|\\\\\\\\.)*\"",
-                "convert": "String(&)",
-                "convertReceiver": "&",
-                "representation": "&",
-                "representationHandler": null,
-                "priority": 1,
-                "properRepresentation": "std::string"
-            },
-            "int": {
-                "type": "dynamic",
-                "syntax": "-?\\d+",
-                "convert": "Math.floor(Number(&))",
-                "convertReceiver": "&",
-                "representation": "&",
-                "representationHandler": null,
-                "priority": 0
-            }
-        }
-    }
+			"async": {
+				"snippet": "(async function(){",
+				"reservedIdentifiers": [],
+				"endSnippet": "})();",
+				"priority": 2
+			},
+			"cinInput": {
+				"snippet": "let h;const i=document.createElement(\"input\");i.style=\"background-color:black;color:white;width:10px;\";",
+				"reservedIdentifiers": ["h", "i"],
+				"endSnippet": "i.remove();",
+				"priority": 1
+			}
+		},
+		"dynamic": {
+			"listed": ["string", "int", "identifier"],
+			"string": {
+				"type": "dynamic",
+				"syntax": "\"([^\\\\]|\\\\\\\\.)*\"",
+				"convert": "String(&)",
+				"convertReceiver": "&",
+				"representation": "&",
+				"representationHandler": null,
+				"priority": 1,
+				"properRepresentation": "std::string"
+			},
+			"int": {
+				"type": "dynamic",
+				"syntax": "-?\\d+",
+				"convert": "Math.floor(Number(&))",
+				"convertReceiver": "&",
+				"representation": "&",
+				"representationHandler": null,
+				"priority": 0
+			},
+			"identifier": {
+				"type": "dynamic",
+				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*",
+				"representationHandler": null,
+				"priority": -1,
+				"canRepresentOwnType": false
+			}
+		}
+	}
 }
-// When compiling regexes, for an example, if /Hello/ has priority of 1, and /hi/ has priority of 0, /Hello/ is compiled first and /hi/ is compiled last
+// Pre-compiled regex for types and other common regex patterns
+const regexes = metadata.base.dynamic.listed.reduce((acc, type) => {
+	acc[type] = new RegExp("^" + metadata.base.dynamic[type].syntax + "$", "");
+	return acc;
+}, {});
+
+const libraryMethodsCache = {};
+
+// Helper function to throw syntax errors
+function throwSyntaxError(line, programSplit, message) {
+	const estimatedLength = programSplit[line - 1].length;
+	throw new SyntaxError(`${message}\nAt line: ${line}. Error in line:\n${programSplit[line - 1]}\n${"~".repeat(estimatedLength)}`);
+}
+
+// Helper function to handle library method matching
+function getLibraryMethod(librarySource, token) {
+	if (!libraryMethodsCache[librarySource]) {
+		libraryMethodsCache[librarySource] = Object.keys(metadata.base.libraries[librarySource].methods);
+	}
+
+	let currentPath = metadata.base.libraries[librarySource];
+	const access = token.split(/::|\./g);
+	let method;
+
+	for (let j = 1; j < access.length; j++) {
+		currentPath = currentPath.methods;
+		const methods = libraryMethodsCache[librarySource];
+		method = methods.find(me => access[j] === me);
+		if (method) {
+			currentPath = currentPath[method];
+			break;
+		}
+	}
+
+	return currentPath;
+}
+
+// Optimized main function
 function compile() {
 	const program = document.getElementById("cprogram").value;
-	const regex = new RegExp(metadata.base.dynamic.listed.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority).map(x => metadata.base.dynamic[x].syntax).join("|") + (metadata.base.dynamic.listed.length > 0 ? "|" : "") + "[<>]{2}|#?[a-zA-Z_][a-zA-Z_0-9]*((::|\\.)([a-zA-Z_][a-zA-Z_0-9]*))*|[\\+\\-\\*/<>\\(\\).\\{\\}\\n]", "g");
+	const regex = new RegExp(
+		metadata.base.dynamic.listed
+			.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority)
+			.map(x => metadata.base.dynamic[x].syntax)
+			.join("|") +
+			(metadata.base.dynamic.listed.length > 0 ? "|" : "") +
+			"[<>]{2}|#?[a-zA-Z_][a-zA-Z_0-9]*((::|\\.)([a-zA-Z_][a-zA-Z_0-9]*))*|[\\+\\-\\*/<>\\(\\).\\{\\}\\n]",
+		"g"
+	);
+
 	const tokens = program.match(regex);
 	const programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
-	const regexesTypes = metadata.base.dynamic.listed.map(x => new RegExp("^" + metadata.base.dynamic[x].regex + "$", ""));
+
+	// Looking over the libraries that should be included
+	const regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
 	const libraryNames = Object.keys(metadata.base.libraries);
-	// Looking over the libraries that should be included.
+
 	for (; i < tokens.length; i++) {
-		console.log(tokens[i]);
-		switch (tokens[i]) {
+		const token = tokens[i];
+		switch (token) {
 			case "#include":
 				i++;
 				if (tokens[i] === "<") {
@@ -126,21 +181,21 @@ function compile() {
 						moduleName += tokens[i];
 						i++;
 					}
+
 					if (tokens[i] === ">") {
 						librariesAdded.push(moduleName);
-						pars.push({type: "include", library: moduleName});
+						pars.push({ type: "include", library: moduleName });
+
 						if (metadata.base.libraries.hasOwnProperty(moduleName)) {
 							variables[metadata.base.libraries[moduleName].namespace] = {
 								type: "library",
 								including: Object.keys(metadata.base.libraries[moduleName].methods)
 							};
 						} else {
-							const estimatedLength = programSplit[currentLine - 1].length;
-							throw new SyntaxError("The library " + moduleName + " has not been found\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
+							throwSyntaxError(currentLine, programSplit, `Library ${moduleName} not found`);
 						}
 					} else {
-						const estimatedLength = programSplit[currentLine - 1].length;
-						throw new SyntaxError("Missing terminating character: >\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
+						throwSyntaxError(currentLine, programSplit, "Missing terminating character: >");
 					}
 				}
 				break;
@@ -148,73 +203,119 @@ function compile() {
 				currentLine++;
 				break;
 			default:
-				const ch1 = metadata.base.dynamic.listed.includes(tokens[i]);
-				const ch2 = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]);
-				if (i + 5 < tokens.length && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
-					mainFunction = true;
-					i += 5;
-				} else if (tokens[i] === "const" || ch1 || ch2) {
-					if (tokens[i] === "const") {
+				handleDefaultCase(token, i, tokens, regexesTypes, programSplit, pars, variables);
+		}
+	}
+
+	// Handle library method sorting
+	librariesAdded = librariesAdded.sort((x, y) => {
+		const xPriority = metadata.base.requestHandlers[metadata.base.libraries[x].requestFunctionality]?.priority ?? 0;
+		const yPriority = metadata.base.requestHandlers[metadata.base.libraries[y].requestFunctionality]?.priority ?? 0;
+		return xPriority - yPriority;
+	});
+
+	// Add libraries' snippets
+	for (const library of librariesAdded) {
+		compiled += metadata.base.requestHandlers[metadata.base.libraries[library].requestFunctionality].snippet;
+	}
+
+	return { JS: compiled, parsing: pars };
+}
+
+// Handle default case for parsing tokens
+function handleDefaultCase(token, i, tokens, regexesTypes, programSplit, pars, variables) {
+	const isType = metadata.base.dynamic.listed.includes(token);
+	const isVarDefined = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]);
+
+	if (i + 5 < tokens.length && token === "int" && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
+		mainFunction = true;
+		i += 5;
+	} else if (token === "const" || isType || isVarDefined) {
+		handleConstAndTypeAssignment(token, i, tokens, regexesTypes, programSplit, pars, variables);
+	} else {
+		const librarySource = libraryNames.find(x => token.startsWith(metadata.base.libraries[x].namespace));
+		if (librarySource) {
+			const currentPath = getLibraryMethod(librarySource, token);
+			switch (currentPath.type) {
+				case "ostream":
+					pars.push({type: "ostream", access: token});
+					while (tokens[i] !== "\n") {
 						i++;
-						if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]))) {
-							break;
-						}
-					}
-					if (mainFunction) {
-						if (metadata.base.dynamic.listed.includes(tokens[i]) && Object.prototype.hasOwnProperty.call(variables, tokens[i + 1])) {
-							const estimatedLength = programSplit[currentLine - 1].length;
-							throw new SyntaxError("The variable has already been declared\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
-						}
-						let type = "";
-						if (metadata.base.dynamic.listed.includes(tokens[i])) {
-							type = tokens[i];
-							if ((metadata.base.dynamic[type].properRepresentation ?? type) !== type) {
-								const estimatedLength = programSplit[currentLine - 1].length;
-								throw new SyntaxError(tokens[i] + " should instead be represented by " + metadata.base.dynamic[type].properRepresentation + "\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + "~".repeat(estimatedLength));
-							}
+						if (tokens[i] === "<<") {
 							i++;
-						}
-						pars.push({type: "assignment", isNew: !Object.prototype.hasOwnProperty.call(variables, tokens[i]), identifier: tokens[i], isConst: tokens[i - 2] === "const"});
-						i++;
-						if (tokens[i] === "=") {
-							i++;
-							// Now to test the types. I think I *regret* starting this project... but I have to keep trying! No matter how long it takes!
-							let working = false, typeOfValue;
+							let typeOfValue;
 							for (let j = 0; j < regexesTypes.length; j++) {
 								if (regexesTypes[j].test(tokens[i])) {
-									pars.push({type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i]});
 									typeOfValue = metadata.base.dynamic.listed[j];
-									variables[tokens[i - 2]] = {
-										type: typeOfValue,
-										literal: tokens[i]
-									};
+									pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
 									working = true;
 									break;
 								}
 							}
-							if (!working) {
-								const estimatedLength = programSplit[currentLine - 1].length;
-								throw new SyntaxError(tokens[i] + " cannot represent any type; the literal is most likely malformed\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + " ".repeat(proc[i - 1].length + type.length + 2) + "~".repeat(estimatedLength));
-							} else if (typeOfValue !== type) {
-								const estimatedLength = programSplit[currentLine - 1].length;
-								throw new RuntimeError("In an assignment, there is a type mismatch between " + type + " and the literal: " + typeOfValue + "\nAt line: " + currentLine + ". Error of the line:\n" + programSplit[currentLine - 1] + "\n" + " ".repeat(proc[i - 1].length + type.length + 2) + "~".repeat(estimatedLength));
-							}
 						}
 					}
-				} else {
-					const librarySource = libraryNames.find(x => tokens[i].startsWith(metadata.base.libraries[x].namespace));
-					if (librarySource) {
-						
+					break;
+				case "istream":
+					pars.push({type: "istream", access: token});
+					i++;
+					if (tokens[i] === ">>") {
+						i++;
+						if (regexesTypes[2].test(tokens[i])) {
+							typeOfValue = metadata.base.dynamic.listed[j];
+							pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
+						} else {
+							throwSyntaxError(currentLine, programSplit, `${tokens[i]} should be a variable; the istream is meant to pass the value to a variable`);
+						}
 					}
-				}
+					break;
+			}
 		}
 	}
-	// Now to sort the libraries. And oh god, is this very complex.
-	librariesAdded = librariesAdded.sort((x, y) => (metadata.base.requestHandlers[metadata.base.libraries[x].requestFunctionality]?.priority ?? 0) - (metadata.base.requestHandlers[metadata.base.libraries[y].requestFunctionality]?.priority ?? 0));
-	for (const library of librariesAdded) {
-		compiled += metadata.base.requestHandlers[metadata.base.libraries[library].requestFunctionality].snippet;
+}
+
+// Handle "const" and type assignments
+function handleConstAndTypeAssignment(token, i, tokens, regexesTypes, programSplit, pars, variables) {
+	if (token === "const") {
+		i++;
+		if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]))) {
+			return;
+		}
 	}
-	return {JS: compiled, parsing: pars};
+
+	let type = "";
+	if (metadata.base.dynamic.listed.includes(tokens[i])) {
+		type = tokens[i];
+		if ((metadata.base.dynamic[type].properRepresentation ?? type) !== type) {
+			throwSyntaxError(currentLine, programSplit, `${type} should be represented by ${metadata.base.dynamic[type].properRepresentation}`);
+		}
+		i++;
+	}
+
+	pars.push({ type: "assignment", isNew: !Object.prototype.hasOwnProperty.call(variables, tokens[i]), identifier: tokens[i], isConst: tokens[i - 2] === "const" });
+	i++;
+
+	if (tokens[i] === "=") {
+		i++;
+		let working = false, typeOfValue;
+		for (let j = 0; j < regexesTypes.length; j++) {
+			if (regexesTypes[j].test(tokens[i])) {
+				pars.push({ type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i] });
+				typeOfValue = metadata.base.dynamic.listed[j];
+				variables[tokens[i - 2]] = {
+					type: typeOfValue,
+					literal: tokens[i]
+				};
+				working = true;
+				break;
+			}
+		}
+
+		if (!working) {
+			throwSyntaxError(currentLine, programSplit, `${tokens[i]} cannot represent any type; the literal is most likely malformed`);
+		} else if (typeOfValue !== type) {
+			throw new RuntimeError(`In an assignment, there is a type mismatch between ${type} and the literal: ${typeOfValue}`);
+		}
+	}
 }
 </script>
 	</body>
