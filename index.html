@@ -101,11 +101,10 @@ int main() {
 				"priority": 0
 			},
 			"identifier": {
-				"type": "dynamic",
+				"type": "debug",
 				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*",
 				"representationHandler": null,
-				"priority": -1,
-				"canRepresentOwnType": false
+				"priority": -1
 			}
 		}
 	}
@@ -152,6 +151,7 @@ function compile() {
 	const program = document.getElementById("cprogram").value;
 	const regex = new RegExp(
 		metadata.base.dynamic.listed
+			.filter(x => metadata.base.dynamic[x].type !== "debug")
 			.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority)
 			.map(x => metadata.base.dynamic[x].syntax)
 			.join("|") +
