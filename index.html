@@ -156,7 +156,7 @@ function compile() {
 			.map(x => metadata.base.dynamic[x].syntax)
 			.join("|") +
 			(metadata.base.dynamic.listed.length > 0 ? "|" : "") +
-			"[<>]{2}|#?[a-zA-Z_][a-zA-Z_0-9]*((::|\\.)([a-zA-Z_][a-zA-Z_0-9]*))*|[\\+\\-\\*/<>\\(\\).\\{\\}\\n]",
+			"[<>]{2}|#?[a-zA-Z_][a-zA-Z_0-9]*((::|\\.)([a-zA-Z_][a-zA-Z_0-9]*))*|[\\+\\-\\*/<>\\(\\).\\{\\}\\n=]",
 		"g"
 	);
 
@@ -211,11 +211,11 @@ function compile() {
 					i += 5;
 				} else if (token === "const" || isType || isVarDefined) {
 						if (token === "const") {
-		i++;
-		if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]))) {
-			return;
-		}
-	}
+							i++;
+							if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]))) {
+								return;
+							}
+						}
 
 	let type = "";
 	if (metadata.base.dynamic.listed.includes(tokens[i])) {
