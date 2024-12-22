@@ -106,7 +106,7 @@ int main() {
 // When compiling regexes, for an example, if /Hello/ has priority of 1, and /hi/ has priority of 0, /Hello/ is compiled first and /hi/ is compiled last
 function compile() {
 	const program = document.getElementById("cprogram").value;
-	const regex = new RegExp(metadata.base.dynamic.listed.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority).map(x => metadata.base.dynamic[x].syntax).join("|") + (metadata.base.dynamic.listed.length > 0 ? "|" : "") + "[<>]{2}|#?(::?([a-zA-Z_][a-zA-Z_0-9]*))+|[\+\-*/<>().\{\}\n]", "g");
+	const regex = new RegExp(metadata.base.dynamic.listed.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority).map(x => metadata.base.dynamic[x].syntax).join("|") + (metadata.base.dynamic.listed.length > 0 ? "|" : "") + "[<>]{2}|#?(::?([a-zA-Z_][a-zA-Z_0-9]*))+|[\\+\\-*/<>().\\{\\}\\n]", "g");
 	const tokens = program.match(regex);
 	const programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
