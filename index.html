@@ -114,6 +114,7 @@ function compile() {
 	const regexesTypes = metadata.base.dynamic.listed.map(x => new RegExp("^" + metadata.base.dynamic[x].regex + "$", ""));
 	// Looking over the libraries that should be included.
 	for (; i < tokens.length; i++) {
+		console.log(tokens[i]);
 		switch (tokens[i]) {
 			case "#include":
 				i++;
