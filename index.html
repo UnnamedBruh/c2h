@@ -115,7 +115,7 @@ const regexes = metadata.base.dynamic.listed.reduce((acc, type) => {
 	acc[type] = new RegExp("^" + metadata.base.dynamic[type].syntax + "$", "");
 	return acc;
 }, {});
-
+const libraryNames = Object.keys(metadata.base.libraries);
 const libraryMethodsCache = {};
 
 // Helper function to throw syntax errors
@@ -167,7 +167,6 @@ function compile() {
 
 	// Looking over the libraries that should be included
 	const regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
-	const libraryNames = Object.keys(metadata.base.libraries);
 
 	for (; i < tokens.length; i++) {
 		const token = tokens[i];
