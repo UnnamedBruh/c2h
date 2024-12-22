@@ -120,6 +120,7 @@ function compile() {
 				i++;
 				if (tokens[i] === "<") {
 					let moduleName = "";
+					i++;
 					while (tokens[i] !== ">" && tokens[i] !== "\n") {
 						moduleName += tokens[i];
 						i++;
