@@ -34,17 +34,18 @@ int main() {
 						"type": "ostream",
 						"acceptTypes": ["string", "int"],
 						"requestFunctionalities": [],
-						"snippets": {
-							 "string": {
-								 "snippet": "o.textContent+=&;",
-								 "placeholderReceiver": "&"
-							 },
-							 "int": {
-								 "snippet": "o.textContent+=String(&);",
-								 "placeholderReceiver": "&"
-							 }
+						"snippet": "o.textContent+=",
+						"accepts": {
+							"string": {
+								"snippet": "&",
+								"placeholderReceiver": "&"
+							},
+							"int": {
+								"snippet": "String(&)",
+								"placeholderReceiver": "&"
+							}
 						},
-						"endSnippet": null,
+						"endSnippet": ";",
 						"status": 0
 					},
 					"cin": {
@@ -86,8 +87,6 @@ int main() {
 				"syntax": "\"([^\\\\\"]|\\\\\\\\.)*\"",
 				"convert": "String(&)",
 				"convertReceiver": "&",
-				"representation": "&",
-				"representationHandler": null,
 				"priority": 1,
 				"properRepresentation": "std::string"
 			},
@@ -96,15 +95,11 @@ int main() {
 				"syntax": "-?\\d+",
 				"convert": "Math.floor(Number(&))",
 				"convertReceiver": "&",
-				"representation": "&",
-				"representationHandler": null,
 				"priority": 0
 			},
 			"identifier": {
 				"type": "debug",
-				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*",
-				"representationHandler": null,
-				"priority": -1
+				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*"
 			}
 		}
 	}
@@ -164,7 +159,7 @@ function compile() {
 	let programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
-
+	let requestFunctionalities = new Set([]);
 	// Looking over the libraries that should be included
 	let regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
 
@@ -183,6 +178,7 @@ function compile() {
 
 					if (tokens[i] === ">") {
 						librariesAdded.push(moduleName);
+						requestFunctionality.add(metadata.base.libraries[moduleName].requestFunctionality);
 						pars.push({ type: "include", library: moduleName });
 						if (metadata.base.libraries.hasOwnProperty(moduleName)) {
 							variables[metadata.base.libraries[moduleName].namespace] = {
@@ -208,13 +204,14 @@ function compile() {
 				} else if (isType) {
 					const isConst = tokens[i - 1] === "const";
 					i++;
+					pars.push({type: "assignment", isConst: isConst, identifier: tokens[i], valueType: tokens[i - 1]});
 					if (!Object.prototype.hasOwnProperty.call(variables, tokens[i])) {
 		if (tokens[i] === "=") {
 			i++;
 			let working = false, typeOfValue;
 			for (let j = 0; j < regexesTypes.length; j++) {
 				if (regexesTypes[j].test(tokens[i])) {
-					pars.push({ type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i] });
+					pars.push({ type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i]});
 					typeOfValue = metadata.base.dynamic.listed[j];
 					variables[tokens[i - 1]] = {
 						type: typeOfValue,
@@ -229,7 +226,6 @@ function compile() {
 		} else if (typeOfValue !== type) {
 			throwSyntaxError(`In an assignment, there is a type mismatch between ${type} and the literal: ${typeOfValue}`);
 		}
-			pars.push({type: "assignment", isConst: isConst, identifier: tokens});
 	}} else {
 					throwSyntaxError(`Variable '${tokens[i - 1]}' has already been declared`);	
 	}
@@ -240,6 +236,9 @@ function compile() {
 						switch (currentPath.type) {
 							case "ostream":
 								pars.push({type: "ostream", access: token});
+								for (const func of currentPath.requestFunctionalities) {
+									requestFunctionality.add(func);
+								}
 								while (tokens[i] !== "\n") {
 									i++;
 									if (tokens[i] === "<<") {
@@ -259,6 +258,9 @@ function compile() {
 								break;
 							case "istream":
 								pars.push({type: "istream", access: token});
+								for (const func of currentPath.requestFunctionalities) {
+									requestFunctionality.add(func);
+								}
 								i++;
 								if (tokens[i] === ">>") {
 									i++;
@@ -283,9 +285,48 @@ function compile() {
 		return xPriority - yPriority;
 	});
 
+	requestFunctionality = [...requestFunctionality].sort((a, b) => metadata.base.requestHandlers[b].priority - metadata.base.requestHandlers[a].priority);
+
+	const reserved = requestFunctionality.map(x => metadata.base.requestHandlers[x].reservedIdentifiers).flat();
+
 	// Add libraries' snippets
-	for (const library of librariesAdded) {
-		compiled += metadata.base.requestHandlers[metadata.base.libraries[library].requestFunctionality].snippet;
+	for (const library of requestFunctionality) {
+		compiled += metadata.base.requestHandlers[library].snippet;
+	}
+
+	// Compilation
+	const identifierList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$_0123456789";
+	function identifierGen(identifierGeneration) {
+		if (identifierGeneration > 53) {
+			return identifierList[identifierGeneration % 54] + identifierList[Math.floor(identifierGeneration / 54) - 1];
+		} else {
+			return identifierList[identifierGeneration];
+		}
+	}
+	function uniqueIdentifier(times) {
+		let i = 0, j = 0, ident;
+		for (; j < times; j++) {
+			ident = identifierGen(i);
+			if (reserved.includes(ident)) {
+				i++;
+			}
+			i++;
+		}
+		return ident;
+	}
+	let ig = 0;
+	variables = {};
+	for (i = 0; i < pars.length; i++) {
+		const token = pars[i];
+		switch (token.type) {
+			case "assignment":
+				compiled += token.isNew ? ((token.isConst ? "const" : "let") + " ") : "";
+				const type = token.valueType;
+				i++;
+				if (type === token.typeOfValue) {
+					
+				}
+		}
 	}
 
 	return { JS: compiled, parsing: pars };
