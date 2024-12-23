@@ -203,52 +203,37 @@ function compile() {
 				break;
 			default:
 				const isType = metadata.base.dynamic.listed.includes(token);
-				const isVarDefined = Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]) || Object.prototype.hasOwnProperty.call(variables, tokens[i]);
 				console.log(isType, isVarDefined);
 				if (i + 5 < tokens.length && token === "int" && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
 					mainFunction = true;
 					i += 5;
-				} else if (token === "const" || isType || isVarDefined) {
-						if (token === "const") {
-							i++;
-							if (!(metadata.base.dynamic.listed.includes(tokens[i]) || Object.prototype.hasOwnProperty.call(variables, tokens[i + 1]))) {
-								return;
-							}
-						}
-
-	let type = "";
-	if (metadata.base.dynamic.listed.includes(tokens[i])) {
-		type = tokens[i];
-		if ((metadata.base.dynamic[type].properRepresentation ?? type) !== type) {
-			throwSyntaxError(currentLine, programSplit, `${type} should be represented by ${metadata.base.dynamic[type].properRepresentation}`);
-		}
-		i++;
-	}
-
-	pars.push({ type: "assignment", isNew: !Object.prototype.hasOwnProperty.call(variables, tokens[i]), identifier: tokens[i], isConst: tokens[i - 2] === "const" });
-	i++;
-
-	if (tokens[i] === "=") {
-		i++;
-		let working = false, typeOfValue;
-		for (let j = 0; j < regexesTypes.length; j++) {
-			if (regexesTypes[j].test(tokens[i])) {
-				pars.push({ type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i] });
-				typeOfValue = metadata.base.dynamic.listed[j];
-				variables[tokens[i - 2]] = {
-					type: typeOfValue,
-					literal: tokens[i]
-				};
-				working = true;
-				break;
+				} else if (isType) {
+					const isConst = tokens[i - 1] === "const";
+					i++;
+					if (!Object.prototype.hasOwnProperty.call(variables, tokens[i])) {
+		if (tokens[i] === "=") {
+			i++;
+			let working = false, typeOfValue;
+			for (let j = 0; j < regexesTypes.length; j++) {
+				if (regexesTypes[j].test(tokens[i])) {
+					pars.push({ type: "value", typeOfValue: metadata.base.dynamic.listed[j], literal: tokens[i] });
+					typeOfValue = metadata.base.dynamic.listed[j];
+					variables[tokens[i - 1]] = {
+						type: typeOfValue,
+						literal: tokens[i]
+					};
+					working = true;
+					break;
+				}
 			}
-		}
-
 		if (!working) {
 			throwSyntaxError(currentLine, programSplit, `${tokens[i]} cannot represent any type; the literal is most likely malformed`);
 		} else if (typeOfValue !== type) {
-			throw new RuntimeError(`In an assignment, there is a type mismatch between ${type} and the literal: ${typeOfValue}`);
+			throwSyntaxError(`In an assignment, there is a type mismatch between ${type} and the literal: ${typeOfValue}`);
 		}
+			pars.push({type: "assignment", isConst: isConst, identifier: tokens});
+	}} else {
+					throwSyntaxError(`Variable '${tokens[i - 1]}' has already been declared`);	
 	}
 				} else {
 					const librarySource = libraryNames.find(x => token.startsWith(metadata.base.libraries[x].namespace));
@@ -272,6 +257,7 @@ function compile() {
 										}
 									}
 								}
+								currentLine;
 								break;
 							case "istream":
 								pars.push({type: "istream", access: token});
