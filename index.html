@@ -170,7 +170,6 @@ function compile() {
 
 	for (; i < tokens.length; i++) {
 		let token = tokens[i];
-		console.log(token);
 		switch (token) {
 			case "#include":
 				i++;
@@ -203,7 +202,6 @@ function compile() {
 				break;
 			default:
 				const isType = metadata.base.dynamic.listed.includes(token);
-				console.log(isType, isVarDefined);
 				if (i + 5 < tokens.length && token === "int" && tokens[i + 1] === "main" && (tokens[i + 2] + tokens[i + 3]) === "()") {
 					mainFunction = true;
 					i += 5;
