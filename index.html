@@ -9,7 +9,7 @@
 		<title>C2BJ (C++ To Browser JavaScript)</title>
 	</head>
 	<body>
-		<p style="color:red">This project is unfinished - formatting errors can happen, unfinished areas can easily be encountered, and other text can be misleading until the features associated with the text are fully implemented!</p>
+		<p style="color:red">This project is unfinished - formatting errors can happen, unfinished areas can easily be encountered, and text/instructions can be misleading temporarily, or more specifically, until the features associated with the instructions are fully implemented. Make sure you know what you are doing before you use this project, and you use it responsibly.</p>
 		<h1>Compiler</h1>
 		<p>This compiler allows you to compile your own C++ programs into JavaScript-equivalent programs, which hasn't been possible yet, but is now a technology! Unfortunately though, this project has just started, so only <code>iostream</code> is the supported library, and its only decendants are <code>cout</code> and <code>cin</code>.</p>
 		<p>But don't worry! Other features may be supported in the future, as I keep developing this invaluable project!</p>
@@ -279,7 +279,7 @@ function compile() {
 								if (tokens[i] === ">>") {
 									i++;
 									if (regexesTypes[2].test(tokens[i])) {
-										typeOfValue = metadata.base.dynamic.listed[j];
+										typeOfValue = metadata.base.dynamic.listed[2];
 										pars.push({ type: "value", typeOfValue: typeOfValue, literal: tokens[i] });
 									} else {
 										throwSyntaxError(currentLine, programSplit, `${tokens[i]} should be a variable; the istream is meant to pass the value to a variable`);
