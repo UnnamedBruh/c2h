@@ -1,0 +1,28 @@
+<canvas id="myCanvas" width="500" height="500"></canvas>
+
+<script>
+  const canvas = document.getElementById("myCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let mouseX = 0, mouseY = 0, prevMouseX = 0, prevMouseY = 0;
+
+  canvas.addEventListener("mousemove", function(event) {
+    [prevMouseX, prevMouseY] = [mouseX, mouseY];
+    mouseX = event.offsetX;
+    mouseY = event.offsetY;
+  });
+
+  function animate() {
+    ctx.clearRect(prevMouseX - 20, prevMouseY - 20, 40, 40);
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(mouseX, mouseY, 20, 0, Math.PI * 2); // Draw circle at mouse position
+    ctx.fill();
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+
+
