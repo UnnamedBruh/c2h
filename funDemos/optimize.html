@@ -13,6 +13,8 @@
   });
 
   function animate() {
+    ctx.fillStyle = "green";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.clearRect(prevMouseX - 20, prevMouseY - 20, 40, 40);
     ctx.fillStyle = "red";
     ctx.beginPath();
