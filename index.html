@@ -377,7 +377,7 @@ function compile() {
 	}
 	requestFunctionality = requestFunctionality.reverse();
 	for (const library of requestFunctionality) {
-		compiled += metadata.base.requestHandlers[library].snippet;
+		compiled += metadata.base.requestHandlers[library].endSnippet;
 	}
 	return { JS: compiled, parsing: pars };
 }
