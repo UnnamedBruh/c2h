@@ -30,7 +30,7 @@ int main() {
 				"description": "Input-Output Streaming",
 				"requestFunctionality": "consoleHandler",
 				"methods": {
-					"cout": {
+					"cout": {											
 						"type": "ostream",
 						"acceptTypes": ["string", "int"],
 						"requestFunctionalities": [],
@@ -335,7 +335,7 @@ function compile() {
 				}
 				break;
 			case "ostream":
-				const lib = getLibraryMethod(token.access);
+				const lib = getLibraryMethod("iostream", token.access);
 				if (lib.type === "ostream") {
 					compiled += lib.snippet;
 					i++;
