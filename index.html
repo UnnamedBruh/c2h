@@ -162,7 +162,7 @@ function compile() {
 	let programSplit = program.split("\n");
 	let i = 0, pars = [], compiled = "", librariesAdded = [], currentLine = 1, variables = {};
 	let mainFunction = false;
-	let requestFunctionalities = new Set([]);
+	let requestFunctionality = new Set([]);
 	// Looking over the libraries that should be included
 	let regexesTypes = metadata.base.dynamic.listed.map(x => regexes[x]);
 
