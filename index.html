@@ -19,7 +19,7 @@ int main() {
 	std::cout &lt;&lt; "Hello, world!";
 	return 0;
 }</textarea>
-		<button onclick="compile()">Compile!</button>
+		<button onclick="document.getElementById('js').textContent = compile();">Compile!</button>
 		<pre id="js"></pre>
 <script>const metadata = {
 	"version": 0,
@@ -45,7 +45,10 @@ int main() {
 								"placeholderReceiver": "&"
 							}
 						},
+						"join": "+",
+						"conversionProvided": true,
 						"endSnippet": ";",
+						"ifTypeNotAcceptedDefaultToTheirConversion": false,
 						"status": 0
 					},
 					"cin": {
@@ -54,7 +57,7 @@ int main() {
 						"requestFunctionalities": ["async", "cinInput"],
 						"snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(r){i.onkeypress=function(e){if(e.key===\"Enter\")r(i.value.split(/\\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=String(h);i.remove();",
 						"placeholderReceiver": "&",
-						"endSnippet": null,
+						"endSnippet": "",
 						"status": 0
 					}
 				}
@@ -84,7 +87,7 @@ int main() {
 			"listed": ["string", "int", "identifier"],
 			"string": {
 				"type": "dynamic",
-				"syntax": "\"([^\\\\\"]|\\\\\\\\.)*\"",
+				"syntax": "\"([^\\\\\"]|\\\\\\\\.)*?\"",
 				"convert": "String(&)",
 				"convertReceiver": "&",
 				"priority": 1,
@@ -92,14 +95,14 @@ int main() {
 			},
 			"int": {
 				"type": "dynamic",
-				"syntax": "-?\\d+",
-				"convert": "Math.floor(Number(&))",
+				"syntax": "-??\\d+?",
+				"convert": "Math.trunc(Number(&))",
 				"convertReceiver": "&",
 				"priority": 0
 			},
 			"identifier": {
 				"type": "debug",
-				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*"
+				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*?"
 			}
 		}
 	}
@@ -254,7 +257,8 @@ function compile() {
 										}
 									}
 								}
-								currentLine;
+								currentLine++;
+								pars.push({"type": "del"});
 								break;
 							case "istream":
 								pars.push({type: "istream", access: token});
@@ -324,11 +328,57 @@ function compile() {
 				const type = token.valueType;
 				i++;
 				if (type === token.typeOfValue) {
-					
+					compiled += token.identifier + "=";
+					if (type === "int" || type === "string" || type === "identifier") {
+						compiled += variables[token.identifier].literal;
+					}
 				}
+				break;
+			case "ostream":
+				const lib = getLibraryMethod(token.access);
+				if (lib.type === "ostream") {
+					compiled += lib.snippet;
+					i++;
+					if (lib.conversionProvided) {
+						while (pars[i + 1].type !== "del") {
+							if (lib.acceptTypes.includes(pars[i].typeOfValue)) {
+								compiled += lib.accepts[pars[i].typeOfValue].snippet.replace(lib.accepts[pars[i].typeOfValue].placeholderReceiver, pars[i].literal) + lib.join;
+							} else {
+								if (lib.ifTypeNotAcceptedDefaultToTheirConversion) {
+									compiled += metadata.base.dynamic.string.convert.replace(metadata.base.dynamic.string.convertPlaceholder, pars[i].literal) + lib.join;
+								}
+							}
+							i++;
+						}
+						if (lib.acceptTypes.includes(pars[i].typeOfValue)) {
+							compiled += lib.accepts[pars[i].typeOfValue].snippet.replace(lib.accepts[pars[i].typeOfValue].placeholderReceiver, pars[i].literal) + lib.endSnippet;
+						} else {
+							if (lib.ifTypeNotAcceptedDefaultToTheirConversion) {
+								compiled += metadata.base.dynamic.string.convert.replace(metadata.base.dynamic.string.convertPlaceholder, pars[i].literal) + lib.endSnippet;
+							}
+						}
+						i++;
+					} else {
+						while (pars[i + 1].type !== "del") {
+							if (lib.acceptTypes.includes(pars[i].typeOfValue)) {
+								compiled += lib.accepts[pars[i].typeOfValue].snippet.replace(lib.accepts[pars[i].typeOfValue].placeholderReceiver, pars[i].literal) + lib.join;
+							} else {
+								if (lib.ifTypeNotAcceptedDefaultToTheirConversion) {
+									compiled += metadata.base.dynamic.string.convert.replace(metadata.base.dynamic.string.convertPlaceholder, pars[i].literal) + lib.join;
+								}
+							}
+							i++;
+						}
+						compiled += metadata.base.dynamic.string.convert.replace(metadata.base.dynamic.string.convertPlaceholder, pars[i].literal) + lib.endSnippet;
+					}
+				}
+				break;
 		}
 	}
-
+	requestFunctionality = requestFunctionality.reverse();
+	for (const library of requestFunctionality) {
+		compiled += metadata.base.requestHandlers[library].snippet;
+	}
 	return { JS: compiled, parsing: pars };
 }
 </script>
