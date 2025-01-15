@@ -144,6 +144,24 @@ function getLibraryMethod(librarySource, token) {
 	return currentPath;
 }
 
+function getLibraryMethodAnony(token) {
+	let currentPath = metadata.base.libraries[librarySource];
+	const access = token.split(/::|\./g);
+	let method;
+
+	for (let j = 0; j < access.length; j++) {
+		currentPath = currentPath.methods;
+		const methods = libraryMethodsCache[librarySource];
+		method = methods.find(me => access[j] === me);
+		if (method) {
+			currentPath = currentPath[method];
+			break;
+		}
+	}
+
+	return currentPath;
+}
+
 // Optimized main function
 function compile() {
 	const program = document.getElementById("cprogram").value;
@@ -335,7 +353,7 @@ function compile() {
 				}
 				break;
 			case "ostream":
-				const lib = getLibraryMethod("iostream", token.access);
+				const lib = getLibraryMethodAnony(token.access);
 				if (lib.type === "ostream") {
 					compiled += lib.snippet;
 					i++;
