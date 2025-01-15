@@ -53,12 +53,13 @@ int main() {
 					},
 					"cin": {
 						"type": "istream",
-						"acceptTypes": ["string"],
+						"acceptTypes": ["string", "int"],
 						"requestFunctionalities": ["async", "cinInput"],
-						"snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(r){i.onkeypress=function(e){if(e.key===\"Enter\")r(i.value.split(/\\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=String(h);i.remove();",
+						"snippet": "c.appendChild(i);i.value=\"\";i.select();h=await new Promise(function(r){i.onkeypress=function(e){if(e.key===\"Enter\")r(i.value.split(/\\s+/).shift());};i.oninput=function(){i.style.width=(10+i.value.length*6)+\"px\"};});&=^;i.remove();",
 						"placeholderReceiver": "&",
+						"placeholderTypeReceiver": "^",
 						"endSnippet": "",
-						"status": 0
+						"status": 0 // String(h)
 					}
 				}
 			}
@@ -95,10 +96,17 @@ int main() {
 			},
 			"int": {
 				"type": "dynamic",
-				"syntax": "-??\\d+?",
+				"syntax": "-??\\d+?(?!\\.)",
 				"convert": "Math.trunc(Number(&))",
 				"convertReceiver": "&",
 				"priority": 0
+			},
+			"double": {
+				"type": "dynamic",
+				"syntax": "-??\\d+?(\\.\\d+)??",
+				"convert": "Number(&)",
+				"convertReceiver": "&",
+				"priority": 0.5
 			},
 			"identifier": {
 				"type": "debug",
