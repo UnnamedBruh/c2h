@@ -59,7 +59,8 @@ int main() {
 						"placeholderReceiver": "&",
 						"placeholderTypeReceiver": "^",
 						"endSnippet": "",
-						"status": 0 // String(h)
+						"conversionProvided": false,
+						"status": 0
 					}
 				}
 			}
@@ -108,8 +109,13 @@ int main() {
 				"convertReceiver": "&",
 				"priority": 0.5
 			},
+			"std::endl": {
+				"type": "predefinedVar",
+				"value": "\"\\n\"",
+				"requiredLibrary": "iostream"
+			},
 			"identifier": {
-				"type": "debug",
+				"type": "regexLexizingOnly",
 				"syntax": "[a-zA-Z_][a-zA-Z_0-9]*?"
 			}
 		}
@@ -153,13 +159,13 @@ function getLibraryMethod(librarySource, token) {
 }
 
 function getLibraryMethodAnony(token) {
-	let currentPath = metadata.base.libraries[librarySource];
+	let currentPath = metadata.base.libraries;
 	const access = token.split(/::|\./g);
 	let method;
 
 	for (let j = 0; j < access.length; j++) {
 		currentPath = currentPath.methods;
-		const methods = libraryMethodsCache[librarySource];
+		const methods = libraryMethodsCache[access[j]];
 		method = methods.find(me => access[j] === me);
 		if (method) {
 			currentPath = currentPath[method];
@@ -175,7 +181,7 @@ function compile() {
 	const program = document.getElementById("cprogram").value;
 	const regex = new RegExp(
 		metadata.base.dynamic.listed
-			.filter(x => metadata.base.dynamic[x].type !== "debug")
+			.filter(x => metadata.base.dynamic[x].type === "dynamic")
 			.sort((a, b) => metadata.base.dynamic[a].priority - metadata.base.dynamic[b].priority)
 			.map(x => metadata.base.dynamic[x].syntax)
 			.join("|") +
